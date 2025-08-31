@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog vs Cat Classifier 🐶🐱</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: #333;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-box {
+            border: 3px dashed #c3cfe2;
+            border-radius: 15px;
+            padding: 2rem;
+            width: 100%;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #f9fbff;
+        }
+        
+        .upload-box.highlight {
+            border-color: #4b6cb7;
+            background-color: #eef2ff;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #4b6cb7;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .browse-btn {
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1rem;
+        }
+        
+        .browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(75, 108, 183, 0.4);
+        }
+        
+        .preview-container {
+            width: 100%;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .predict-btn {
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1.5rem;
+            width: 200px;
+        }
+        
+        .predict-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .predict-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(75, 108, 183, 0.4);
+        }
+        
+        .result-container {
+            text-align: center;
+            padding: 2rem;
+            background-color: #f9fbff;
+            border-radius: 15px;
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #4b6cb7;
+        }
+        
+        .prediction-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        
+        .confidence {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        
+        .animal-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #eef2ff;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        
+        .progress {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .dog-progress {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+        }
+        
+        .cat-progress {
+            background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+        }
+        
+        .probability-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        
+        .probability {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 10px;
+            width: 45%;
+        }
+        
+        .dog-probability {
+            background-color: #fff5f5;
+        }
+        
+        .cat-probability {
+            background-color: #f0f7ff;
+        }
+        
+        .probability-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .probability-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+            
+            .probability-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .probability {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dog vs Cat Classifier</h1>
+            <p class="subtitle">Upload an image to determine if it's a dog or a cat</p>
+        </header>
+        
+        <div class="content">
+            <div class="upload-container">
+                <div class="upload-box" id="uploadBox">
+                    <div class="upload-icon">📁</div>
+                    <p>Drag & drop your image here or click to browse</p>
+                    <button class="browse-btn">Browse Files</button>
+                    <input type="file" class="file-input" id="imageInput" accept="image/*">
+                </div>
+                
+                <div class="preview-container">
+                    <img id="preview" src="#" alt="Image Preview">
+                </div>
+                
+                <button class="predict-btn" id="predictBtn" disabled>Predict</button>
+            </div>
+            
+            <div class="result-container" id="resultContainer">
+                <h2 class="result-title">Prediction Result</h2>
+                <div class="animal-icon" id="animalIcon">🐾</div>
+                <div class="prediction-text" id="predictionText"></div>
+                <div class="confidence" id="confidenceText"></div>
+                
+                <div class="progress-bar">
+                    <div class="progress dog-progress" id="dogProgress" style="width: 0%"></div>
+                </div>
+                
+                <div class="probability-container">
+                    <div class="probability dog-probability">
+                        <div class="probability-label">Dog Probability</div>
+                        <div class="probability-value" id="dogProbability">0%</div>
+                    </div>
+                    <div class="probability cat-probability">
+                        <div class="probability-label">Cat Probability</div>
+                        <div class="probability-value" id="catProbability">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Dog vs Cat Classification using Machine Learning | Made with ❤️</p>
+    </footer>
+
+    <script>
+        // DOM elements
+        const uploadBox = document.getElementById('uploadBox');
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const predictBtn = document.getElementById('predictBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const animalIcon = document.getElementById('animalIcon');
+        const predictionText = document.getElementById('predictionText');
+        const confidenceText = document.getElementById('confidenceText');
+        const dogProgress = document.getElementById('dogProgress');
+        const dogProbability = document.getElementById('dogProbability');
+        const catProbability = document.getElementById('catProbability');
+
+        // Event listeners for drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            uploadBox.classList.add('highlight');
+        }
+
+        function unhighlight() {
+            uploadBox.classList.remove('highlight');
+        }
+
+        // Handle file drop
+        uploadBox.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                handleFiles(files);
+            }
+        }
+
+        // Handle file selection via browse button
+        uploadBox.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        imageInput.addEventListener('change', () => {
+            if (imageInput.files.length) {
+                handleFiles(imageInput.files);
+            }
+        });
+
+        // Process selected files
+        function handleFiles(files) {
+            const file = files[0];
+            if (!file.type.match('image.*')) {
+                alert('Please upload an image file');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function() {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+                predictBtn.disabled = false;
+                resultContainer.style.display = 'none';
+            };
+        }
+
+        // Handle prediction
+        predictBtn.addEventListener('click', async () => {
+            if (!imageInput.files.length) return;
+            
+            predictBtn.disabled = true;
+            predictBtn.textContent = 'Predicting...';
+            
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Display results
+                displayResult(data.prediction);
+                
+            } catch (err) {
+                alert('Error: ' + err.message);
+                predictBtn.disabled = false;
+                predictBtn.textContent = 'Predict';
+            }
+        });
+
+        // Display prediction result
+        function displayResult(predictionValue) {
+            // Assuming the model returns a value between 0 (cat) and 1 (dog)
+            const dogConfidence = Array.isArray(predictionValue) ? 
+                predictionValue[0][0] : predictionValue;
+            const catConfidence = 1 - dogConfidence;
+            
+            const isDog = dogConfidence >= 0.5;
+            const animal = isDog ? 'Dog' : 'Cat';
+            const confidence = isDog ? dogConfidence : catConfidence;
+            
+            // Update UI
+            animalIcon.textContent = isDog ? '🐶' : '🐱';
+            predictionText.textContent = `It's a ${animal}!`;
+            predictionText.style.color = isDog ? '#ff6b6b' : '#339af0';
+            confidenceText.textContent = `Confidence: ${(confidence * 100).toFixed(2)}%`;
+            
+            // Update progress bars and probabilities
+            const dogPercent = dogConfidence * 100;
+            const catPercent = catConfidence * 100;
+            
+            dogProgress.style.width = `${dogPercent}%`;
+            dogProbability.textContent = `${dogPercent.toFixed(2)}%`;
+            catProbability.textContent = `${catPercent.toFixed(2)}%`;
+            
+            // Show result container
+            resultContainer.style.display = 'block';
+            
+            // Reset predict button
+            predictBtn.disabled = false;
+            predictBtn.textContent = 'Predict Again';
+        }
+    </script>
+</body>
+</html>
